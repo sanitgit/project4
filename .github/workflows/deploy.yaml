@@ -1,0 +1,46 @@
+name: Deploy Website to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy website files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "index.html,style.css,app.js"
+          target: "/home/${{ secrets.EC2_USER }}/website"
+
+      - name: Install Nginx and deploy site
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            if command -v apt >/dev/null 2>&1; then
+              sudo apt update
+              sudo apt install nginx -y
+            elif command -v yum >/dev/null 2>&1; then
+              sudo yum install nginx -y
+            fi
+
+            sudo systemctl enable nginx
+            sudo systemctl start nginx
+
+            sudo rm -rf /var/www/html/*
+            sudo cp -r /home/${{ secrets.EC2_USER }}/website/* /var/www/html/
+
+            sudo systemctl restart nginx
+            sudo systemctl status nginx --no-pager
