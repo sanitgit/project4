@@ -21,6 +21,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "index.html,style.css,app.js,Dockerfile"
           target: "/home/${{ secrets.EC2_USER }}/website"
+          target: "/home/${{ secrets.EC2_USER }}/website2"
 
       - name: Build and run Docker container
         uses: appleboy/ssh-action@v1.0.3
@@ -51,7 +52,17 @@ jobs:
             sudo docker build -t my-website .
 
             sudo docker run -d --name website -p 80:80 my-website
-            sudo docker run -d --name website -p 81:81 my-website
+
+            cd /home/${{ secrets.EC2_USER }}/website2 #2nd container
+
+            echo "Files copied to server:"
+            ls -la
+
+            sudo docker stop website || true
+            sudo docker rm website || true
+
+            sudo docker build -t my-website .
+            sudo docker run -d --name website2 -p 81:81 my-website
 
             echo "Running containers:"
             sudo docker ps
