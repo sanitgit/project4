@@ -1,12 +1,12 @@
-sudo tee /var/www/html/index.html > /dev/null <<'EOF'
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My Website</title>
+  <title>My Docker Website</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Website deployed successfully</h1>
-  <p>Hello from EC2 + Nginx + GitHub Actions</p>
+  <h1>Website deployed with Docker</h1>
+  <p>Running on EC2 created by Terraform</p>
+  <script src="app.js"></script>
 </body>
 </html>
-EOF
