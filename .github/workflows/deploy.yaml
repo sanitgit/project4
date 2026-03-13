@@ -29,19 +29,28 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            set -e
+
+            # install docker if missing
             if ! command -v docker >/dev/null 2>&1; then
               sudo apt update
               sudo apt install docker.io -y
               sudo systemctl start docker
               sudo systemctl enable docker
+              sudo usermod -aG docker ubuntu
             fi
 
             cd /home/${{ secrets.EC2_USER }}/website
+
+            echo "Files copied to server:"
+            ls -la
 
             sudo docker stop website || true
             sudo docker rm website || true
 
             sudo docker build -t my-website .
+
             sudo docker run -d --name website -p 80:80 my-website
 
+            echo "Running containers:"
             sudo docker ps
